@@ -127,7 +127,7 @@ public class SmesXProvider {
 		Scheme scheme = registry.getScheme(new HttpHost(endpoint, port, "https"));
 		// schema for https port 443 also work fine with port 2200
 		if (scheme == null) {
-			registry.register(new Scheme("https", factory, 2200));
+			registry.register(new Scheme("https", 2200, factory));
 		}
 	}
 
@@ -179,7 +179,7 @@ public class SmesXProvider {
 				HttpEntity rentity = response.getEntity();
 				headers = response.getAllHeaders();
 				rentity.writeTo(baos);
-				rentity.consumeContent();
+				rentity.getContent().close();
 			}
 
 			bytes = baos.toByteArray();

@@ -21,7 +21,7 @@ public class NaiveSSLClient extends DefaultHttpClient {
 	 * Singleton instance.
 	 */
 	private static NaiveSSLClient instance = null;
-	
+
 	/**
 	 * @return Singleton instance.
 	 */
@@ -31,57 +31,56 @@ public class NaiveSSLClient extends DefaultHttpClient {
 		}
 		return instance;
 	}
-	
+
 	/**
-	 * @return New instance of HTTP client. 
+	 * @return New instance of HTTP client.
 	 */
 	protected static NaiveSSLClient create() {
 
 		NaiveSSLClient client = new NaiveSSLClient();
-		
-		/* NOTE!
-		 * Set up TSL/SSL naive settings.  
+
+		/*
+		 * NOTE! Set up TSL/SSL naive settings.
 		 */
-		
+
 		SSLSocketFactory factory = NaiveSSLFactory.createNaiveSSLSocketFactory();
 		ClientConnectionManager manager = client.getConnectionManager();
 
-		// add https 443 by default 
+		// add https 443 by default
 		SchemeRegistry registry = manager.getSchemeRegistry();
-		registry.register(new Scheme("https", factory, 443));
-		
-		/* NOTE!
-		 * Set up proxy settings.
+		registry.register(new Scheme("https", 443, factory));
+
+		/*
+		 * NOTE! Set up proxy settings.
 		 */
 
-		String phost = (String)System.getProperties().get("http.proxyHost");
-		String pport = (String)System.getProperties().get("http.proxyPort");
+		String phost = (String) System.getProperties().get("http.proxyHost");
+		String pport = (String) System.getProperties().get("http.proxyPort");
 
 		if (phost != null && pport != null) {
-			
+
 			int port = -1;
 			try {
 				port = Integer.parseInt(pport);
 			} catch (NumberFormatException e) {
 				throw new RuntimeException("Incorrect proxy port '" + pport + "'", e);
 			}
-			
+
 			HttpHost proxy = new HttpHost(phost, port, "http");
 			client.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);
 		}
-		
-		
+
 		return client;
 	}
-	
+
 	/**
 	 * Private.
 	 */
 	private NaiveSSLClient() {
 	}
-	
+
 	public HttpPost createPost(String uri) {
-		HttpPost post = new HttpPost(uri); 
+		HttpPost post = new HttpPost(uri);
 		post.getParams().setBooleanParameter("http.protocol.expect-continue", false);
 		return post;
 	}

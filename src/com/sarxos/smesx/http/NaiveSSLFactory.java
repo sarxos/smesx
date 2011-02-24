@@ -11,8 +11,7 @@ import org.apache.http.conn.ssl.SSLSocketFactory;
 
 
 /**
- * Create naive SSLSocket factories which will authorize any
- * TSL/SSL host.
+ * Create naive SSLSocket factory which will authorize any TSL/SSL host.
  * 
  * @author Bartosz Firyn (SarXos)
  */
@@ -25,15 +24,15 @@ public class NaiveSSLFactory {
 		X509TrustManager manager = new NaiveX509TrustManager();
 		SSLContext sslcontext = null;
 		try {
-			TrustManager[] managers = new TrustManager[] {manager}; 
-			sslcontext = SSLContext.getInstance("SSL"); 
+			TrustManager[] managers = new TrustManager[] { manager };
+			sslcontext = SSLContext.getInstance("SSL");
 			sslcontext.init(null, managers, null);
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
 		} catch (KeyManagementException e) {
 			e.printStackTrace();
 		}
-		SSLSocketFactory factory = new SSLSocketFactory(sslcontext); 
+		SSLSocketFactory factory = new SSLSocketFactory(sslcontext);
 		factory.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
 		return factory;
 	}
