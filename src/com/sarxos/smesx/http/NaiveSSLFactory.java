@@ -32,8 +32,6 @@ public class NaiveSSLFactory {
 		} catch (KeyManagementException e) {
 			e.printStackTrace();
 		}
-		SSLSocketFactory factory = new SSLSocketFactory(sslcontext);
-		factory.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
-		return factory;
+		return new SSLSocketFactory(sslcontext, SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
 	}
 }
