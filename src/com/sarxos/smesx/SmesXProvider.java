@@ -4,6 +4,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,7 +14,6 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
-import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
@@ -149,6 +150,7 @@ public class SmesXProvider {
 
 		byte[] bytes = marshall(request);
 
+		// log
 		try {
 			FileOutputStream fos = new FileOutputStream(log, true);
 			fos.write(bytes);
@@ -158,49 +160,71 @@ public class SmesXProvider {
 			e.printStackTrace();
 		}
 
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		String xml = new String(bytes);
+		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+		nvps.add(new BasicNameValuePair("xml", xml));
 
-		Header[] headers = null;
-
+		UrlEncodedFormEntity entity = null;
 		try {
-			String xml = new String(bytes);
-			List<NameValuePair> nvps = new ArrayList<NameValuePair>();
-			nvps.add(new BasicNameValuePair("xml", xml));
-			UrlEncodedFormEntity entity = new UrlEncodedFormEntity(nvps);
-
-			String url = "https://" + endpoint + ":" + port + "/smesx";
-			HttpPost post = client.createPost(url);
-			post.setHeader("User-Agent", userAgent);
-			post.setHeader("Content-Type", "application/x-www-form-urlencoded");
-			post.setEntity(entity);
-
-			synchronized (client) {
-				HttpResponse response = client.execute(post);
-				HttpEntity rentity = response.getEntity();
-				headers = response.getAllHeaders();
-				rentity.writeTo(baos);
-				rentity.getContent().close();
-			}
-
-			bytes = baos.toByteArray();
-			baos.reset();
-
-			try {
-				FileOutputStream fos = new FileOutputStream(log, true);
-				fos.write(bytes);
-				fos.write('\n');
-				fos.write('\n');
-				fos.close();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-
-		} catch (Exception e) {
+			entity = new UrlEncodedFormEntity(nvps);
+		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
 
-		if (bytes.length == 0) {
-			throw new SmesXException("SmesX response is empty!", headers);
+		String url = "https://" + endpoint + ":" + port + "/smesx";
+		HttpPost post = client.createPost(url);
+		post.setHeader("User-Agent", userAgent);
+		post.setHeader("Content-Type", "application/x-www-form-urlencoded");
+		post.setEntity(entity);
+
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+		synchronized (client) {
+
+			HttpEntity rentity = null;
+			try {
+				HttpResponse response = client.execute(post);
+				rentity = response.getEntity();
+				rentity.writeTo(baos);
+
+				if (baos.size() == 0) {
+					throw new SmesXException("SmesX response is empty!", response.getAllHeaders());
+				}
+
+			} catch (Exception e) {
+				e.printStackTrace();
+			} finally {
+				if (rentity != null) {
+					try {
+						rentity.getContent().close();
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+
+			}
+		}
+
+		bytes = baos.toByteArray();
+		baos.reset();
+
+		// log 2
+		FileOutputStream fos = null;
+		try {
+			fos = new FileOutputStream(log, true);
+			fos.write(bytes);
+			fos.write('\n');
+			fos.write('\n');
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			if (fos != null) {
+				try {
+					fos.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
 		}
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
