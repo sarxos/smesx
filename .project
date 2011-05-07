@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>SmesX</name>
-	<comment></comment>
+	<name>smesx</name>
+	<comment>SmesX 2.2 interface implementation</comment>
 	<projects>
 	</projects>
 	<buildSpec>
@@ -10,8 +10,14 @@
 			<arguments>
 			</arguments>
 		</buildCommand>
+		<buildCommand>
+			<name>org.maven.ide.eclipse.maven2Builder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
 	</buildSpec>
 	<natures>
+		<nature>org.maven.ide.eclipse.maven2Nature</nature>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>
 </projectDescription>
